@@ -1,0 +1,261 @@
+erDiagram
+    CLIMBER {
+        int climber_id PK
+        varchar(100) first_name "NOT NULL"
+        varchar(100) last_name "NOT NULL"
+        date birth_date "NOT NULL"
+        varchar(200) address_line1 "NOT NULL"
+        varchar(100) city "NOT NULL"
+        varchar(50) postal_code "NOT NULL"
+        varchar(50) country "NOT NULL"
+        varchar(100) email UK "NOT NULL, UNIQUE"
+        varchar(50) phone "NOT NULL"
+        int experience_level_id FK "NOT NULL"
+        boolean is_active "DEFAULT TRUE"
+        varchar(100) emergency_contact_name "NOT NULL"
+        varchar(50) emergency_contact_phone "NOT NULL"
+        varchar(50) blood_type
+    }
+
+    EXPERIENCE_LEVEL {
+        int experience_level_id PK
+        varchar(50) level_name UK "NOT NULL, UNIQUE"
+        int min_climbs_required "NOT NULL, DEFAULT 0"
+        int min_years_experience "NOT NULL, DEFAULT 0"
+    }
+
+    MOUNTAIN {
+        int mountain_id PK
+        varchar(100) mountain_name "NOT NULL"
+        decimal height_meters "NOT NULL"
+        int area_id FK "NOT NULL"
+        varchar(50) mountain_range
+        date climbing_season
+        boolean permits_required "DEFAULT FALSE"
+        int peak_type_id FK
+    }
+
+    PEAK_TYPE {
+        int peak_type_id PK
+        varchar(50) type_name UK "NOT NULL, UNIQUE"
+    }
+
+    AREA {
+        int area_id PK
+        varchar(100) area_name "NOT NULL"
+        varchar(100) country "NOT NULL"
+        decimal latitude "NOT NULL"
+        decimal longitude "NOT NULL"
+        varchar(100) local_authority
+        varchar(250) permit_requirements
+        varchar(250) access_restrictions
+        varchar(100) nearest_city
+        decimal distance_to_nearest_hospital_km
+    }
+
+    ROUTE {
+        int route_id PK
+        int mountain_id FK "NOT NULL"
+        varchar(100) route_name "NOT NULL"
+        int difficulty_level_id FK "NOT NULL"
+        decimal length_meters "NOT NULL"
+        boolean is_seasonal "DEFAULT FALSE"
+        varchar(50) best_season
+        decimal avg_completion_days
+        boolean technical_climbing_required "DEFAULT FALSE"
+        int risk_level_id FK "NOT NULL"
+    }
+
+    RISK_LEVEL {
+        int risk_level_id PK
+        varchar(50) risk_name UK "NOT NULL, UNIQUE"
+        boolean requires_special_insurance "DEFAULT FALSE"
+        boolean requires_special_training "DEFAULT FALSE"
+    }
+
+    DIFFICULTY_LEVEL {
+        int difficulty_level_id PK
+        varchar(50) difficulty_name UK "NOT NULL, UNIQUE"
+        int min_experience_level_id FK "NOT NULL"
+        varchar(50) technical_grade
+        varchar(50) commitment_grade
+        varchar(50) altitude_grade
+    }
+
+    BASE_CAMP {
+        int base_camp_id PK
+        int mountain_id FK "NOT NULL"
+        varchar(100) camp_name "NOT NULL"
+        decimal height_meters "NOT NULL"
+        int max_capacity "DEFAULT 0"
+        boolean has_medical_facility "DEFAULT FALSE"
+        decimal latitude "NOT NULL"
+        decimal longitude "NOT NULL"
+        boolean has_wifi "DEFAULT FALSE"
+        boolean has_electricity "DEFAULT FALSE"
+        boolean has_water_source "DEFAULT FALSE"
+    }
+
+    EQUIPMENT {
+        int equipment_id PK
+        varchar(100) equipment_name "NOT NULL"
+        decimal weight_kg
+        boolean is_technical "DEFAULT FALSE"
+        boolean is_safety "DEFAULT FALSE"
+        boolean is_rental_available "DEFAULT FALSE"
+        decimal rental_cost_per_day
+        int equipment_category_id FK "NOT NULL"
+        int lifespan_years
+    }
+
+    EQUIPMENT_CATEGORY {
+        int equipment_category_id PK
+        varchar(50) category_name UK "NOT NULL, UNIQUE"
+    }
+
+    EQUIPMENT_INVENTORY {
+        int inventory_id PK
+        int equipment_id FK "NOT NULL"
+        varchar(50) serial_number "NOT NULL"
+        date purchase_date "NOT NULL"
+        date last_maintenance
+        varchar(50) condition "NOT NULL, DEFAULT 'New'"
+        boolean available "DEFAULT TRUE"
+        int current_location_id FK
+    }
+
+    EQUIPMENT_REQUIREMENT {
+        int requirement_id PK
+        int difficulty_level_id FK "NOT NULL"
+        int equipment_id FK "NOT NULL"
+        boolean is_mandatory "DEFAULT TRUE"
+        int quantity_required "DEFAULT 1"
+    }
+
+    EQUIPMENT_RENTAL {
+        int rental_id PK
+        int inventory_id FK "NOT NULL"
+        int climber_id FK "NOT NULL"
+        int climb_id FK "NOT NULL"
+        date rental_start "NOT NULL"
+        date rental_end "NOT NULL"
+        decimal deposit_amount "NOT NULL"
+        decimal rental_fee "NOT NULL"
+        varchar(50) condition_on_return
+        boolean returned "DEFAULT FALSE"
+    }
+
+    INSURANCE_LEVEL {
+        int insurance_level_id PK
+        varchar(100) insurance_name UK "NOT NULL, UNIQUE"
+        varchar(250) coverage_details
+        decimal min_coverage_amount "NOT NULL"
+        decimal search_rescue_coverage
+        boolean helicopter_evacuation_covered "DEFAULT FALSE"
+        boolean medical_repatriation_covered "DEFAULT FALSE"
+        boolean third_party_liability "DEFAULT FALSE"
+    }
+
+    CLIMBER_INSURANCE {
+        int climber_insurance_id PK
+        int climber_id FK "NOT NULL"
+        varchar(100) policy_number "NOT NULL"
+        date start_date "NOT NULL"
+        date end_date "NOT NULL"
+        decimal coverage_amount "NOT NULL"
+        boolean verified "DEFAULT FALSE"
+    }
+
+    CLIMB {
+        int climb_id PK
+        date start_date "NOT NULL"
+        date end_date "NOT NULL"
+        int route_id FK "NOT NULL"
+        varchar(50) status "NOT NULL, DEFAULT 'Planned'"
+        int insurance_level_id FK "NOT NULL"
+        int max_participants "DEFAULT 10"
+        decimal total_cost "NOT NULL"
+        boolean is_club_sponsored "DEFAULT FALSE"
+        varchar(250) special_requirements
+        date registration_deadline "NOT NULL"
+        datetime briefing_datetime
+        varchar(250) cancellation_policy
+    }
+
+    CLIMB_PARTICIPANT {
+        int participant_id PK
+        int climb_id FK "NOT NULL"
+        int climber_id FK "NOT NULL"
+        boolean waiver_signed "DEFAULT FALSE"
+        date signed_date
+        boolean has_required_insurance "DEFAULT FALSE"
+        boolean completed_climb "DEFAULT FALSE"
+        boolean attendance_confirmed "DEFAULT FALSE"
+        boolean gear_checked "DEFAULT FALSE"
+    }
+
+    PAYMENT {
+        int payment_id PK
+        int climb_id FK "NOT NULL"
+        int climber_id FK "NOT NULL"
+        decimal amount "NOT NULL"
+        date payment_date "NOT NULL"
+        varchar(50) payment_method "NOT NULL"
+        varchar(50) payment_status "NOT NULL, DEFAULT 'Pending'"
+        varchar(100) transaction_ref UK "UNIQUE"
+        decimal deposit_amount "DEFAULT 0"
+        date deposit_date
+        int invoice_id FK
+    }
+
+    INVOICE {
+        int invoice_id PK
+        int climb_id FK "NOT NULL"
+        int climber_id FK "NOT NULL"
+        date invoice_date "NOT NULL"
+        date due_date "NOT NULL"
+        decimal total_amount "NOT NULL"
+        varchar(50) status "NOT NULL, DEFAULT 'Unpaid'"
+        decimal tax_rate "DEFAULT 0"
+        decimal tax_amount "DEFAULT 0"
+        decimal discount_amount "DEFAULT 0"
+    }
+
+    PAYMENT_RATE {
+        int rate_id PK
+        int difficulty_level_id FK "NOT NULL"
+        decimal base_fee "NOT NULL"
+        date effective_date "NOT NULL"
+        date end_date
+        decimal equipment_rental_surcharge "DEFAULT 0"
+        decimal guide_fee_percentage "DEFAULT 0"
+        decimal peak_season_surcharge "DEFAULT 0"
+        decimal group_discount_threshold
+        decimal group_discount_percentage "DEFAULT 0"
+    }
+
+    CLIMBER ||--o{ CLIMB_PARTICIPANT : participates
+    CLIMB ||--o{ CLIMB_PARTICIPANT : includes
+    CLIMB ||--o{ PAYMENT : generates
+    CLIMBER ||--o{ PAYMENT : makes
+    MOUNTAIN ||--o{ ROUTE : has
+    AREA ||--o{ MOUNTAIN : contains
+    MOUNTAIN ||--o{ BASE_CAMP : has
+    MOUNTAIN }o--|| PEAK_TYPE : categorized_as
+    ROUTE }o--|| DIFFICULTY_LEVEL : classified_by
+    DIFFICULTY_LEVEL ||--o{ EQUIPMENT_REQUIREMENT : requires
+    EQUIPMENT }o--|| EQUIPMENT_REQUIREMENT : included_in
+    CLIMB }o--|| INSURANCE_LEVEL : requires
+    DIFFICULTY_LEVEL }o--|| PAYMENT_RATE : determines
+    ROUTE }o--|| CLIMB : followed_in
+    ROUTE }o--|| RISK_LEVEL : assessed_as
+    CLIMBER }o--|| EXPERIENCE_LEVEL : has
+    DIFFICULTY_LEVEL }o--|| EXPERIENCE_LEVEL : requires
+    CLIMBER ||--o{ CLIMB : guides
+    EQUIPMENT }o--|| EQUIPMENT_CATEGORY : belongs_to
+    EQUIPMENT ||--o{ EQUIPMENT_INVENTORY : stocked_as
+    EQUIPMENT_INVENTORY ||--o{ EQUIPMENT_RENTAL : rented_as
+    CLIMBER ||--o{ EQUIPMENT_RENTAL : rents
+    CLIMB ||--o{ EQUIPMENT_RENTAL : used_for
+    CLIMBER ||--o{ CLIMBER_INSURANCE : holds
+    PAYMENT }o--|| INVOICE : settles

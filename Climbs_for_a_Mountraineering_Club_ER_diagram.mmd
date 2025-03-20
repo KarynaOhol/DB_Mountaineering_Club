@@ -1,0 +1,26 @@
+erDiagram
+    CLIMBER ||--o{ CLIMB_PARTICIPANT: participates
+    CLIMB ||--o{ CLIMB_PARTICIPANT: includes
+    CLIMB ||--o{ PAYMENT: generates
+    CLIMBER ||--o{ PAYMENT: makes
+    MOUNTAIN ||--o{ ROUTE: has
+    AREA ||--o{ MOUNTAIN: contains
+    MOUNTAIN ||--o{ BASE_CAMP: has
+    MOUNTAIN }o--|| PEAK_TYPE: categorized_as
+    ROUTE }o--|| DIFFICULTY_LEVEL: classified_by
+    DIFFICULTY_LEVEL ||--o{ EQUIPMENT_REQUIREMENT: requires
+    EQUIPMENT }o--|| EQUIPMENT_REQUIREMENT: included_in
+    CLIMB }o--|| INSURANCE_LEVEL: requires
+    DIFFICULTY_LEVEL }o--|| PAYMENT_RATE: determines
+    ROUTE }o--|| CLIMB: followed_in
+    ROUTE }o--|| RISK_LEVEL: assessed_as
+    CLIMBER }o--|| EXPERIENCE_LEVEL: has
+    DIFFICULTY_LEVEL }o--|| EXPERIENCE_LEVEL: requires
+    CLIMBER ||--o{ CLIMB: guides
+    EQUIPMENT }o--|| EQUIPMENT_CATEGORY: belongs_to
+    EQUIPMENT ||--o{ EQUIPMENT_INVENTORY: stocked_as
+    EQUIPMENT_INVENTORY ||--o{ EQUIPMENT_RENTAL: rented_as
+    CLIMBER ||--o{ EQUIPMENT_RENTAL: rents
+    CLIMB ||--o{ EQUIPMENT_RENTAL: used_for
+    CLIMBER ||--o{ CLIMBER_INSURANCE: holds
+    PAYMENT }o--|| INVOICE: settles

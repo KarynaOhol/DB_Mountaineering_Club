@@ -1,247 +1,655 @@
--- Sample data script for Mountaineering Club Database
--- This script adds sample data to each table
+-- Populate experience_level table
+INSERT INTO experience_level (level_name, min_climbs_required, min_years_experience)
+VALUES ('Beginner', 0, 0),
+       ('Intermediate', 5, 1),
+       ('Advanced', 15, 3),
+       ('Expert', 30, 5)
+ON CONFLICT (level_name) DO NOTHING;
 
--- Clear existing data (if needed)
--- TRUNCATE TABLE payment_rate, equipment_rental, payment, invoice, climb_participant, climber_insurance,
---   climb, insurance_level, equipment_requirement, equipment_inventory, equipment, equipment_category,
---   base_camp, route, difficulty_level, risk_level, mountain, area, peak_type, climber, experience_level CASCADE;
 
--- Reset sequences (if needed)
--- ALTER SEQUENCE experience_level_id_seq RESTART WITH 1;
--- ALTER SEQUENCE climber_id_seq RESTART WITH 1;
--- [etc for all sequences]
-\connect mountaineering_club
--- Add Experience Levels
-INSERT INTO experience_level (experience_level_id, level_name, min_climbs_required, min_years_experience) VALUES
-(1, 'Beginner', 0, 0),
-(2, 'Novice', 3, 1),
-(3, 'Intermediate', 8, 2),
-(4, 'Advanced', 15, 3),
-(5, 'Expert', 25, 5);
+-- Populate peak_type table
+INSERT INTO peak_type (type_name)
+VALUES ('Volcanic'),
+       ('Granite'),
+       ('Limestone'),
+       ('Sandstone')
+ON CONFLICT (type_name) DO NOTHING;
 
--- Add Peak Types
-INSERT INTO peak_type (peak_type_id, type_name) VALUES
-(1, 'Volcanic'),
-(2, 'Granite'),
-(3, 'Limestone'),
-(4, 'Sandstone'),
-(5, 'Quartzite');
+-- Populate area table
+INSERT INTO area (area_name, country, latitude, longitude, local_authority, permit_requirements, access_restrictions,
+                  nearest_city, distance_to_nearest_hospital_km)
+VALUES ('Alps', 'Switzerland', 46.8182, 8.2275, 'Swiss Alpine Club', 'None for basic hiking',
+        'Some routes closed in winter', 'Zurich', 45.5),
+       ('Dolomites', 'Italy', 46.4102, 11.8440, 'Italian Alpine Club', 'Required for certain peaks',
+        'National park regulations apply', 'Bolzano', 35.2),
+       ('Cascades', 'USA', 47.5211, -121.4380, 'US Forest Service', 'Wilderness permits required',
+        'Winter access limited', 'Seattle', 80.7)
+ON CONFLICT ON CONSTRAINT unique_area_country DO NOTHING;
 
--- Add Areas
-INSERT INTO area (area_id, area_name, country, latitude, longitude, local_authority, permit_requirements, access_restrictions, nearest_city, distance_to_nearest_hospital_km) VALUES
-(1, 'Alps', 'Switzerland', 46.5197, 8.0388, 'Swiss Alpine Club', 'None for most peaks', 'Some seasonal closures', 'Interlaken', 35.5),
-(2, 'Dolomites', 'Italy', 46.4102, 11.8440, 'Italian Alpine Club', 'Required for certain peaks', 'Wildlife protection areas', 'Cortina d''Ampezzo', 28.3),
-(3, 'Yosemite', 'USA', 37.8651, -119.5383, 'National Park Service', 'Climbing permits required', 'Some routes closed for nesting', 'Mariposa', 42.1),
-(4, 'Himalayas', 'Nepal', 27.9881, 86.9250, 'Nepal Mountaineering Association', 'Permits required for all peaks', 'Seasonal access only', 'Kathmandu', 85.7),
-(5, 'Andes', 'Argentina', -32.6532, -70.0109, 'Argentinian Mountain Association', 'Permits for major peaks', 'Winter closures', 'Mendoza', 67.2);
+-- CREATE INDEX IF NOT EXISTS on country for faster filtering by country
+CREATE INDEX IF NOT EXISTS idx_area_country ON area (country);
 
--- Add Climbers
-INSERT INTO climber (climber_id, first_name, last_name, birth_date, address_line1, city, postal_code, country, email, phone, experience_level_id, is_active, emergency_contact_name, emergency_contact_phone, blood_type) VALUES
-(1, 'John', 'Smith', '1985-05-15', '123 Alpine Way', 'Boulder', '80302', 'USA', 'john.smith@email.com', '555-1234', 4, TRUE, 'Jane Smith', '555-5678', 'O+'),
-(2, 'Emma', 'Johnson', '1990-07-22', '456 Mountain View', 'Denver', '80201', 'USA', 'emma.j@email.com', '555-2345', 3, TRUE, 'Mike Johnson', '555-6789', 'A-'),
-(3, 'Lukas', 'Weber', '1982-03-10', 'Bergstrasse 42', 'Zurich', '8001', 'Switzerland', 'lukas.w@email.com', '41-55-123456', 5, TRUE, 'Heidi Weber', '41-55-789012', 'B+'),
-(4, 'Sofia', 'Garcia', '1988-11-18', 'Calle Montana 7', 'Barcelona', '08001', 'Spain', 'sofia.g@email.com', '34-555-4321', 2, TRUE, 'Carlos Garcia', '34-555-8765', 'AB+'),
-(5, 'Akira', 'Tanaka', '1991-01-25', '3-7 Yama Street', 'Tokyo', '100-0001', 'Japan', 'akira.t@email.com', '81-3-1234-5678', 3, TRUE, 'Yuki Tanaka', '81-3-8765-4321', 'A+'),
-(6, 'Maria', 'Schmidt', '1987-09-03', 'Alpenweg 12', 'Munich', '80331', 'Germany', 'maria.s@email.com', '49-89-12345678', 4, TRUE, 'Hans Schmidt', '49-89-87654321', 'O-'),
-(7, 'David', 'Chen', '1993-06-12', '25 Summit Ave', 'Vancouver', 'V6B 1S5', 'Canada', 'david.c@email.com', '1-604-555-1234', 2, TRUE, 'Lisa Chen', '1-604-555-5678', 'B-'),
-(8, 'Olivia', 'Martinez', '1984-04-28', '789 High Ridge', 'Seattle', '98101', 'USA', 'olivia.m@email.com', '555-3456', 3, TRUE, 'Miguel Martinez', '555-7890', 'O+'),
-(9, 'James', 'Wilson', '1989-08-07', '42 Crag Lane', 'Portland', '97201', 'USA', 'james.w@email.com', '555-4567', 4, TRUE, 'Sarah Wilson', '555-8901', 'A+'),
-(10, 'Elena', 'Rossi', '1986-12-14', 'Via Montagna 23', 'Milan', '20121', 'Italy', 'elena.r@email.com', '39-02-12345678', 3, TRUE, 'Marco Rossi', '39-02-87654321', 'AB-');
+-- Populate climber table (requires experience_level to exist)
+INSERT INTO climber (first_name, last_name, birth_date, address_line1, city, postal_code, country, email, phone,
+                     experience_level_id, emergency_contact_name, emergency_contact_phone, blood_type)
+VALUES ('Alex', 'Johnson', '2001-05-15', '123 Mountain Way', 'Boulder', '80302', 'USA', 'alex@example.com',
+        '303-555-1234', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'intermediate'),
+        'Sarah Johnson', '303-555-4321', 'O+'),
+       ('Maria', 'Garcia', '2002-07-22', '456 Alpine Street', 'Denver', '80201', 'USA', 'maria@example.com',
+        '303-555-5678', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'advanced'),
+        'Carlos Garcia', '303-555-8765', 'A-'),
+       ('Hiroshi', 'Tanaka', '2002-11-10', '789 Summit Avenue', 'Portland', '97201', 'USA', 'hiroshi@example.com',
+        '503-555-9012', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'beginner'),
+        'Yuki Tanaka', '503-555-2109', 'B+')
+ON CONFLICT (email) DO NOTHING;
 
--- Add Mountains
-INSERT INTO mountain (mountain_id, mountain_name, height_meters, area_id, mountain_range, permits_required, peak_type_id) VALUES
-(1, 'Matterhorn', 4478.0, 1, 'Pennine Alps', TRUE, 2),
-(2, 'Tre Cime di Lavaredo', 2999.0, 2, 'Eastern Dolomites', FALSE, 3),
-(3, 'El Capitan', 2307.0, 3, 'Sierra Nevada', FALSE, 2),
-(4, 'Mount Everest', 8848.86, 4, 'Mahalangur Himal', TRUE, 2),
-(5, 'Aconcagua', 6960.8, 5, 'Principal Cordillera', TRUE, 1),
-(6, 'Eiger', 3967.0, 1, 'Bernese Alps', TRUE, 2),
-(7, 'Half Dome', 2695.0, 3, 'Sierra Nevada', TRUE, 2),
-(8, 'Mont Blanc', 4809.0, 1, 'Graian Alps', TRUE, 2),
-(9, 'Annapurna', 8091.0, 4, 'Annapurna Massif', TRUE, 2),
-(10, 'Fitz Roy', 3405.0, 5, 'Patagonian Andes', FALSE, 2);
+-- CREATE INDEX IF NOT EXISTS on experience_level_id for faster lookups
+CREATE INDEX IF NOT EXISTS idx_climber_experience_level ON climber (experience_level_id);
 
--- Add Risk Levels
-INSERT INTO risk_level (risk_level_id, risk_name, requires_special_insurance, requires_special_training) VALUES
-(1, 'Low', FALSE, FALSE),
-(2, 'Moderate', FALSE, FALSE),
-(3, 'Considerable', TRUE, FALSE),
-(4, 'High', TRUE, TRUE),
-(5, 'Extreme', TRUE, TRUE);
+-- Populate mountain table (requires area and peak_type to exist)
+INSERT INTO mountain (mountain_name, height_meters, area_id, mountain_range, climbing_season_start, climbing_season_end,
+                      permits_required, peak_type_id)
+VALUES ('Matterhorn', 4478.0, (SELECT area_id FROM area WHERE LOWER(area_name) = 'alps'),
+        'Alps', '2025-06-15', '2025-09-30', TRUE,
+        (SELECT peak_type_id FROM peak_type WHERE LOWER(type_name) = 'granite')),
+       ('Tre Cime di Lavaredo', 2999.0, (SELECT area_id FROM area WHERE LOWER(area_name) = 'dolomites'),
+        'Dolomites', '2025-06-01', '2025-10-15', TRUE,
+        (SELECT peak_type_id FROM peak_type WHERE LOWER(type_name) = 'limestone')),
+       ('Mount Rainier', 4392.0, (SELECT area_id FROM area WHERE LOWER(area_name) = 'cascades'),
+        'Cascades', '2025-05-15', '2025-09-15', TRUE,
+        (SELECT peak_type_id FROM peak_type WHERE LOWER(type_name) = 'volcanic'))
+ON CONFLICT ON CONSTRAINT unique_mountain_in_area DO NOTHING;
 
--- Add Difficulty Levels
-INSERT INTO difficulty_level (difficulty_level_id, difficulty_name, min_experience_level_id, technical_grade, commitment_grade, altitude_grade) VALUES
-(1, 'Easy', 1, 'F', 'I', 'A1'),
-(2, 'Moderate', 2, 'PD', 'II', 'A2'),
-(3, 'Challenging', 3, 'AD', 'III', 'A3'),
-(4, 'Difficult', 4, 'D', 'IV', 'A4'),
-(5, 'Very Difficult', 4, 'TD', 'V', 'A4'),
-(6, 'Extremely Difficult', 5, 'ED', 'VI', 'A5'),
-(7, 'Exceptionally Difficult', 5, 'ED+', 'VII', 'A5+');
+-- CREATE INDEX IF NOT EXISTSes for mountain
+CREATE INDEX IF NOT EXISTS idx_mountain_area ON mountain (area_id);
+CREATE INDEX IF NOT EXISTS idx_mountain_peak_type ON mountain (peak_type_id);
+CREATE INDEX IF NOT EXISTS idx_mountain_height ON mountain (height_meters);
 
--- Add Routes
-INSERT INTO route (route_id, mountain_id, route_name, difficulty_level_id, length_meters, is_seasonal, best_season, avg_completion_days, technical_climbing_required, risk_level_id) VALUES
-(1, 1, 'Hörnli Ridge', 4, 1200, TRUE, 'Summer', 1.5, TRUE, 3),
-(2, 1, 'Zmutt Ridge', 5, 1350, TRUE, 'Summer', 2.0, TRUE, 4),
-(3, 2, 'Normal Route', 3, 600, TRUE, 'Summer', 0.5, FALSE, 2),
-(4, 3, 'The Nose', 6, 900, FALSE, 'Spring/Fall', 4.0, TRUE, 4),
-(5, 3, 'Salathe Wall', 7, 870, FALSE, 'Spring/Fall', 5.0, TRUE, 4),
-(6, 4, 'South Col Route', 5, 3500, TRUE, 'May/October', 7.0, TRUE, 5),
-(7, 5, 'Normal Route', 4, 2800, TRUE, 'December-February', 12.0, FALSE, 4),
-(8, 6, 'North Face', 6, 1800, TRUE, 'Summer', 3.0, TRUE, 5),
-(9, 7, 'Cable Route', 3, 400, TRUE, 'Summer', 0.5, FALSE, 2),
-(10, 8, 'Gouter Route', 4, 1500, TRUE, 'Summer', 2.0, TRUE, 3);
+-- Populate risk_level table
+INSERT INTO risk_level (risk_name, requires_special_insurance, requires_special_training)
+VALUES ('Low', FALSE, FALSE),
+       ('Moderate', FALSE, TRUE),
+       ('High', TRUE, TRUE),
+       ('Extreme', TRUE, TRUE)
+ON CONFLICT (risk_name) DO NOTHING;
 
--- Add Base Camps
-INSERT INTO base_camp (base_camp_id, mountain_id, camp_name, height_meters, max_capacity, has_medical_facility, latitude, longitude, has_wifi, has_electricity, has_water_source) VALUES
-(1, 1, 'Hörnli Hut', 3260.0, 50, TRUE, 45.9764, 7.6586, TRUE, TRUE, TRUE),
-(2, 4, 'Everest Base Camp', 5364.0, 200, TRUE, 28.0003, 86.8510, TRUE, TRUE, TRUE),
-(3, 4, 'Camp 1', 6065.0, 80, FALSE, 28.0244, 86.8743, FALSE, FALSE, TRUE),
-(4, 4, 'Camp 2', 6500.0, 60, FALSE, 28.0068, 86.8610, FALSE, FALSE, TRUE),
-(5, 4, 'Camp 3', 7300.0, 40, FALSE, 27.9971, 86.9292, FALSE, FALSE, FALSE),
-(6, 4, 'Camp 4', 8000.0, 30, FALSE, 27.9831, 86.9265, FALSE, FALSE, FALSE),
-(7, 5, 'Plaza de Mulas', 4300.0, 150, TRUE, -32.6532, -70.0109, TRUE, TRUE, TRUE),
-(8, 5, 'Nido de Cóndores', 5400.0, 50, FALSE, -32.6499, -70.0185, FALSE, FALSE, TRUE),
-(9, 8, 'Gouter Hut', 3835.0, 60, TRUE, 45.8518, 6.8305, TRUE, TRUE, TRUE),
-(10, 2, 'Auronzo Hut', 2320.0, 120, TRUE, 46.6146, 12.3026, TRUE, TRUE, TRUE);
+-- Populate difficulty_level table (requires experience_level to exist)
+INSERT INTO difficulty_level (difficulty_name, min_experience_level_id, technical_grade, commitment_grade,
+                              altitude_grade)
+VALUES ('Easy', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'beginner'),
+        'F', 'I', 'A1'),
+       ('Moderate', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'intermediate'),
+        'PD', 'II', 'A2'),
+       ('Difficult', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'advanced'),
+        'AD', 'III', 'A3'),
+       ('Very Difficult', (SELECT experience_level_id FROM experience_level WHERE LOWER(level_name) = 'expert'),
+        'D', 'IV', 'A4')
+ON CONFLICT (difficulty_name) DO NOTHING;
 
--- Add Equipment Categories
-INSERT INTO equipment_category (equipment_category_id, category_name) VALUES
-(1, 'Technical Hardware'),
-(2, 'Clothing'),
-(3, 'Footwear'),
-(4, 'Camping'),
-(5, 'Safety');
+-- CREATE INDEX IF NOT EXISTS on min_experience_level_id for faster joins
+CREATE INDEX IF NOT EXISTS idx_difficulty_experience ON difficulty_level (min_experience_level_id);
 
--- Add Equipment
-INSERT INTO equipment (equipment_id, equipment_name, weight_kg, is_technical, is_safety, is_rental_available, rental_cost_per_day, equipment_category_id, lifespan_years) VALUES
-(1, 'Climbing Rope (60m)', 4.2, TRUE, TRUE, TRUE, 15.00, 1, 3),
-(2, 'Crampons', 1.0, TRUE, TRUE, TRUE, 10.00, 1, 5),
-(3, 'Ice Axe', 0.8, TRUE, TRUE, TRUE, 8.00, 1, 7),
-(4, 'Harness', 0.5, TRUE, TRUE, TRUE, 7.00, 1, 4),
-(5, 'Down Jacket', 0.9, FALSE, FALSE, TRUE, 12.00, 2, 5),
-(6, 'Mountaineering Boots', 2.0, TRUE, TRUE, TRUE, 20.00, 3, 4),
-(7, 'Helmet', 0.4, TRUE, TRUE, TRUE, 8.00, 5, 5),
-(8, '4-Season Tent', 3.5, FALSE, FALSE, TRUE, 25.00, 4, 6),
-(9, 'Sleeping Bag (-20°C)', 1.8, FALSE, FALSE, TRUE, 15.00, 4, 5),
-(10, 'Avalanche Transceiver', 0.3, TRUE, TRUE, TRUE, 14.00, 5, 5);
+-- Populate route table (requires mountain, difficulty_level, and risk_level to exist)
+INSERT INTO route (mountain_id, route_name, difficulty_level_id, length_meters, is_seasonal, best_season,
+                   avg_completion_days, technical_climbing_required, risk_level_id)
+VALUES ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'matterhorn'),
+        'Hörnli Ridge',
+        (SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'difficult'),
+        1200, TRUE, 'Summer', 2.0, TRUE,
+        (SELECT risk_level_id FROM risk_level WHERE LOWER(risk_name) = 'high')),
+       ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'tre cime di lavaredo'),
+        'Normal Route',
+        (SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'moderate'),
+        800, TRUE, 'Summer', 1.0, FALSE,
+        (SELECT risk_level_id FROM risk_level WHERE LOWER(risk_name) = 'moderate')),
+       ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'mount rainier'),
+        'Disappointment Cleaver',
+        (SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'difficult'),
+        4400, TRUE, 'Summer', 2.5, TRUE,
+        (SELECT risk_level_id FROM risk_level WHERE LOWER(risk_name) = 'high')),
+       ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'matterhorn'),
+        'Lion Ridge',
+        (SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'very difficult'),
+        1400, TRUE, 'Summer', 2.5, TRUE,
+        (SELECT risk_level_id FROM risk_level WHERE LOWER(risk_name) = 'extreme'))
+ON CONFLICT ON CONSTRAINT unique_route_on_mountain DO NOTHING;
 
--- Add Equipment Inventory
-INSERT INTO equipment_inventory (inventory_id, equipment_id, serial_number, purchase_date, last_maintenance, condition, available, current_location_id) VALUES
-(1, 1, 'R-2023-001', '2023-01-15', '2023-06-10', 'Good', TRUE, NULL),
-(2, 1, 'R-2023-002', '2023-01-15', '2023-06-10', 'Good', TRUE, NULL),
-(3, 2, 'C-2022-001', '2022-11-05', '2023-07-22', 'Excellent', TRUE, NULL),
-(4, 2, 'C-2022-002', '2022-11-05', '2023-07-22', 'Good', TRUE, NULL),
-(5, 3, 'IA-2022-001', '2022-10-20', '2023-08-15', 'Good', TRUE, NULL),
-(6, 4, 'H-2023-001', '2023-02-28', '2023-08-01', 'Excellent', TRUE, NULL),
-(7, 5, 'DJ-2021-001', '2021-09-15', '2023-05-10', 'Fair', TRUE, NULL),
-(8, 6, 'MB-2022-001', '2022-08-10', '2023-06-15', 'Good', TRUE, NULL),
-(9, 7, 'HM-2023-001', '2023-03-20', '2023-08-20', 'Excellent', TRUE, NULL),
-(10, 8, 'T-2022-001', '2022-04-05', '2023-07-10', 'Good', TRUE, NULL);
+-- CREATE INDEX IF NOT EXISTSes for routes
+CREATE INDEX IF NOT EXISTS idx_route_mountain ON route (mountain_id);
+CREATE INDEX IF NOT EXISTS idx_route_difficulty ON route (difficulty_level_id);
+CREATE INDEX IF NOT EXISTS idx_route_risk ON route (risk_level_id);
 
--- Add Equipment Requirements
-INSERT INTO equipment_requirement (requirement_id, difficulty_level_id, equipment_id, is_mandatory, quantity_required) VALUES
-(1, 3, 1, TRUE, 1),
-(2, 3, 4, TRUE, 1),
-(3, 4, 1, TRUE, 1),
-(4, 4, 2, TRUE, 1),
-(5, 4, 3, TRUE, 1),
-(6, 4, 4, TRUE, 1),
-(7, 4, 7, TRUE, 1),
-(8, 5, 1, TRUE, 1),
-(9, 5, 2, TRUE, 1),
-(10, 5, 3, TRUE, 1);
+-- Populate base_camp table (requires mountain to exist)
+INSERT INTO base_camp (mountain_id, camp_name, height_meters, max_capacity, has_medical_facility, latitude, longitude,
+                       has_wifi, has_electricity, has_water_source)
+VALUES ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'matterhorn'),
+        'Hörnli Hut', 3260, 50, TRUE, 45.9763, 7.6586, TRUE, TRUE, TRUE),
+       ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'mount rainier'),
+        'Camp Muir', 3072, 25, FALSE, 46.8350, -121.7330, FALSE, FALSE, TRUE),
+       ((SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'tre cime di lavaredo'),
+        'Auronzo Hut', 2320, 120, TRUE, 46.6169, 12.3026, TRUE, TRUE, TRUE)
+ON CONFLICT ON CONSTRAINT unique_camp_on_mountain DO NOTHING;
 
--- Add Insurance Levels
-INSERT INTO insurance_level (insurance_level_id, insurance_name, coverage_details, min_coverage_amount, search_rescue_coverage, helicopter_evacuation_covered, medical_repatriation_covered, third_party_liability) VALUES
-(1, 'Basic', 'Basic medical coverage only', 50000.00, 10000.00, FALSE, FALSE, FALSE),
-(2, 'Standard', 'Standard coverage with some rescue', 100000.00, 25000.00, TRUE, FALSE, TRUE),
-(3, 'Comprehensive', 'Full coverage for most climbs', 250000.00, 50000.00, TRUE, TRUE, TRUE),
-(4, 'Expedition', 'High altitude coverage', 500000.00, 100000.00, TRUE, TRUE, TRUE),
-(5, 'Ultimate', 'Maximum coverage for extreme climbs', 1000000.00, 250000.00, TRUE, TRUE, TRUE);
+-- CREATE INDEX IF NOT EXISTSes for base camps
+CREATE INDEX IF NOT EXISTS idx_basecamp_mountain ON base_camp (mountain_id);
+CREATE INDEX IF NOT EXISTS idx_basecamp_height ON base_camp (height_meters);
 
--- Add Climbs
-INSERT INTO climb (climb_id, start_date, end_date, route_id, status, insurance_level_id, max_participants, total_cost, is_club_sponsored, special_requirements, registration_deadline) VALUES
-(1, '2023-07-15', '2023-07-16', 1, 'Completed', 3, 8, 1200.00, TRUE, 'Experience with exposure required', '2023-06-15'),
-(2, '2023-08-10', '2023-08-12', 8, 'Completed', 4, 6, 2500.00, FALSE, 'Previous North Face experience recommended', '2023-07-10'),
-(3, '2023-09-05', '2023-09-09', 4, 'Cancelled', 3, 4, 3000.00, FALSE, 'Big wall experience required', '2023-08-05'),
-(4, '2023-10-01', '2023-10-10', 7, 'Completed', 4, 10, 4500.00, TRUE, 'High altitude experience required', '2023-08-25'),
-(5, '2023-05-01', '2023-05-14', 6, 'Completed', 5, 5, 45000.00, FALSE, 'Previous 8000m experience required', '2023-02-01'),
-(6, '2024-01-10', '2024-01-25', 7, 'Planned', 4, 8, 5000.00, TRUE, 'Acclimatization required', '2023-11-15'),
-(7, '2024-05-01', '2024-05-15', 6, 'Planned', 5, 6, 48000.00, FALSE, 'Previous 8000m experience required', '2024-01-15'),
-(8, '2024-07-20', '2024-07-21', 9, 'Planned', 2, 12, 800.00, TRUE, 'Beginner-friendly route', '2024-06-20'),
-(9, '2024-08-05', '2024-08-07', 10, 'Planned', 3, 10, 1800.00, TRUE, 'Good fitness level required', '2024-07-05'),
-(10, '2024-09-15', '2024-09-16', 3, 'Planned', 2, 8, 1000.00, TRUE, 'Scenic route for intermediate climbers', '2024-08-15');
+-- Populate equipment_category table
+INSERT INTO equipment_category (category_name)
+VALUES ('Clothing'),
+       ('Technical'),
+       ('Safety'),
+       ('Camping')
+ON CONFLICT (category_name) DO NOTHING;
 
--- Add Climber Insurance
-INSERT INTO climber_insurance (climber_insurance_id, climber_id, policy_number, start_date, end_date, coverage_amount, verified) VALUES
-(1, 1, 'INS-2023-001', '2023-01-01', '2023-12-31', 300000.00, TRUE),
-(2, 2, 'INS-2023-002', '2023-01-15', '2023-12-31', 150000.00, TRUE),
-(3, 3, 'INS-2023-003', '2023-02-01', '2024-01-31', 500000.00, TRUE),
-(4, 4, 'INS-2023-004', '2023-01-01', '2023-12-31', 100000.00, TRUE),
-(5, 5, 'INS-2023-005', '2023-03-01', '2024-02-29', 250000.00, TRUE),
-(6, 6, 'INS-2023-006', '2023-01-01', '2023-12-31', 300000.00, TRUE),
-(7, 7, 'INS-2023-007', '2023-04-01', '2024-03-31', 150000.00, TRUE),
-(8, 8, 'INS-2023-008', '2023-01-01', '2023-12-31', 200000.00, TRUE),
-(9, 9, 'INS-2023-009', '2023-02-15', '2024-02-14', 350000.00, TRUE),
-(10, 10, 'INS-2023-010', '2023-01-01', '2023-12-31', 250000.00, TRUE);
+-- Populate equipment table (requires equipment_category to exist)
+INSERT INTO equipment (equipment_name, weight_kg, is_technical, is_safety, is_rental_available, rental_cost_per_day,
+                       equipment_category_id, lifespan_years)
+VALUES ('Ice Axe', 0.5, TRUE, TRUE, TRUE, 10.00,
+        (SELECT equipment_category_id FROM equipment_category WHERE LOWER(category_name) = 'technical'), 8),
+       ('Crampons', 1.2, TRUE, TRUE, TRUE, 15.00,
+        (SELECT equipment_category_id FROM equipment_category WHERE LOWER(category_name) = 'technical'), 5),
+       ('Helmet', 0.4, FALSE, TRUE, TRUE, 8.00,
+        (SELECT equipment_category_id FROM equipment_category WHERE LOWER(category_name) = 'safety'), 5),
+       ('Down Jacket', 0.8, FALSE, FALSE, TRUE, 12.00,
+        (SELECT equipment_category_id FROM equipment_category WHERE LOWER(category_name) = 'clothing'), 4),
+       ('Tent', 2.5, FALSE, FALSE, TRUE, 25.00,
+        (SELECT equipment_category_id FROM equipment_category WHERE LOWER(category_name) = 'camping'), 6)
+ON CONFLICT ON CONSTRAINT unique_equipment_in_category DO NOTHING;
 
--- Add Climb Participants
-INSERT INTO climb_participant (participant_id, climb_id, climber_id, waiver_signed, signed_date, has_required_insurance, completed_climb, attendance_confirmed, gear_checked) VALUES
-(1, 1, 1, TRUE, '2023-06-20', TRUE, TRUE, TRUE, TRUE),
-(2, 1, 3, TRUE, '2023-06-18', TRUE, TRUE, TRUE, TRUE),
-(3, 1, 6, TRUE, '2023-06-22', TRUE, TRUE, TRUE, TRUE),
-(4, 2, 3, TRUE, '2023-07-15', TRUE, TRUE, TRUE, TRUE),
-(5, 2, 9, TRUE, '2023-07-16', TRUE, TRUE, TRUE, TRUE),
-(6, 4, 3, TRUE, '2023-09-10', TRUE, TRUE, TRUE, TRUE),
-(7, 4, 6, TRUE, '2023-09-12', TRUE, TRUE, TRUE, TRUE),
-(8, 4, 9, TRUE, '2023-09-08', TRUE, TRUE, TRUE, TRUE),
-(9, 5, 3, TRUE, '2023-04-01', TRUE, TRUE, TRUE, TRUE),
-(10, 5, 6, TRUE, '2023-04-02', TRUE, TRUE, TRUE, TRUE);
+-- CREATE INDEX IF NOT EXISTS for equipment category
+CREATE INDEX IF NOT EXISTS idx_equipment_category ON equipment (equipment_category_id);
 
--- Add Invoices
-INSERT INTO invoice (invoice_id, climb_id, climber_id, invoice_date, due_date, total_amount, status, tax_rate, tax_amount, discount_amount) VALUES
-(1, 1, 1, '2023-05-20', '2023-06-10', 1200.00, 'Paid', 8.00, 96.00, 0.00),
-(2, 1, 3, '2023-05-20', '2023-06-10', 1200.00, 'Paid', 8.00, 96.00, 0.00),
-(3, 1, 6, '2023-05-20', '2023-06-10', 1200.00, 'Paid', 8.00, 96.00, 0.00),
-(4, 2, 3, '2023-06-15', '2023-07-15', 2500.00, 'Paid', 8.00, 200.00, 0.00),
-(5, 2, 9, '2023-06-15', '2023-07-15', 2500.00, 'Paid', 8.00, 200.00, 0.00),
-(6, 4, 3, '2023-08-10', '2023-09-10', 4500.00, 'Paid', 8.00, 360.00, 450.00),
-(7, 4, 6, '2023-08-10', '2023-09-10', 4500.00, 'Paid', 8.00, 360.00, 0.00),
-(8, 4, 9, '2023-08-10', '2023-09-10', 4500.00, 'Paid', 8.00, 360.00, 0.00),
-(9, 5, 3, '2023-01-15', '2023-02-15', 45000.00, 'Paid', 8.00, 3600.00, 2000.00),
-(10, 5, 6, '2023-01-15', '2023-02-15', 45000.00, 'Paid', 8.00, 3600.00, 0.00);
+-- Populate equipment_inventory table (requires equipment to exist)
+INSERT INTO equipment_inventory (equipment_id, serial_number, purchase_date, last_maintenance, condition, available)
+VALUES ((SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'ice axe'),
+        'AX-10001', '2023-03-15', '2025-01-10', 'Good', TRUE),
+       ((SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'ice axe'),
+        'AX-10002', '2023-03-15', '2025-01-10', 'Excellent', TRUE),
+       ((SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'crampons'),
+        'CR-20001', '2023-04-20', '2025-01-15', 'Good', TRUE),
+       ((SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'helmet'),
+        'HM-30001', '2023-05-10', '2025-02-05', 'Fair', TRUE),
+       ((SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'down jacket'),
+        'DJ-40001', '2024-01-05', NULL, 'Excellent', TRUE),
+       ((SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'tent'),
+        'TN-50001', '2024-02-10', '2025-03-01', 'Good', TRUE)
+ON CONFLICT ON CONSTRAINT unique_equipment_serial DO NOTHING;
 
--- Add Payments
-INSERT INTO payment (payment_id, climb_id, climber_id, amount, payment_date, payment_method, payment_status, transaction_ref, deposit_amount, deposit_date, invoice_id) VALUES
-(1, 1, 1, 1200.00, '2023-06-05', 'Credit Card', 'Completed', 'TXN-2023-001', 500.00, '2023-05-25', 1),
-(2, 1, 3, 1200.00, '2023-06-01', 'Bank Transfer', 'Completed', 'TXN-2023-002', 500.00, '2023-05-22', 2),
-(3, 1, 6, 1200.00, '2023-06-08', 'Credit Card', 'Completed', 'TXN-2023-003', 500.00, '2023-05-24', 3),
-(4, 2, 3, 2500.00, '2023-07-10', 'Credit Card', 'Completed', 'TXN-2023-004', 1000.00, '2023-06-20', 4),
-(5, 2, 9, 2500.00, '2023-07-12', 'PayPal', 'Completed', 'TXN-2023-005', 1000.00, '2023-06-25', 5),
-(6, 4, 3, 4050.00, '2023-09-05', 'Bank Transfer', 'Completed', 'TXN-2023-006', 2000.00, '2023-08-15', 6),
-(7, 4, 6, 4500.00, '2023-09-01', 'Credit Card', 'Completed', 'TXN-2023-007', 2000.00, '2023-08-12', 7),
-(8, 4, 9, 4500.00, '2023-09-08', 'PayPal', 'Completed', 'TXN-2023-008', 2000.00, '2023-08-18', 8),
-(9, 5, 3, 43000.00, '2023-02-10', 'Bank Transfer', 'Completed', 'TXN-2023-009', 15000.00, '2023-01-20', 9),
-(10, 5, 6, 45000.00, '2023-02-12', 'Credit Card', 'Completed', 'TXN-2023-010', 15000.00, '2023-01-25', 10);
+-- CREATE INDEX IF NOT EXISTSes for inventory
+CREATE INDEX IF NOT EXISTS idx_inventory_equipment ON equipment_inventory (equipment_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_available ON equipment_inventory (available);
 
--- Add Equipment Rentals
-INSERT INTO equipment_rental (rental_id, inventory_id, climber_id, climb_id, rental_start, rental_end, deposit_amount, rental_fee, condition_on_return, returned) VALUES
-(1, 2, 1, 1, '2023-07-14', '2023-07-17', 200.00, 45.00, 'Good', TRUE),
-(2, 3, 1, 1, '2023-07-14', '2023-07-17', 150.00, 30.00, 'Good', TRUE),
-(3, 4, 3, 2, '2023-08-09', '2023-08-13', 150.00, 40.00, 'Good', TRUE),
-(4, 5, 3, 2, '2023-08-09', '2023-08-13', 120.00, 32.00, 'Good', TRUE),
-(5, 6, 9, 2, '2023-08-09', '2023-08-13', 100.00, 28.00, 'Excellent', TRUE),
-(6, 8, 3, 4, '2023-09-30', '2023-10-11', 300.00, 275.00, 'Good', TRUE),
-(7, 9, 3, 4, '2023-09-30', '2023-10-11', 100.00, 88.00, 'Good', TRUE),
-(8, 10, 6, 4, '2023-09-30', '2023-10-11', 300.00, 275.00, 'Good', TRUE),
-(9, 1, 9, 4, '2023-09-30', '2023-10-11', 200.00, 165.00, 'Fair', TRUE),
-(10, 7, 9, 4, '2023-09-30', '2023-10-11', 150.00, 132.00, 'Good', TRUE);
+-- Populate equipment_requirement table (requires difficulty_level and equipment to exist)
+INSERT INTO equipment_requirement (difficulty_level_id, equipment_id, is_mandatory, quantity_required)
+VALUES ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'difficult'),
+        (SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'ice axe'),
+        TRUE, 1), -- Ice axe for difficult routes
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'difficult'),
+        (SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'crampons'),
+        TRUE, 1), -- Crampons for difficult routes
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'difficult'),
+        (SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'helmet'),
+        TRUE, 1), -- Helmet for difficult routes
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'moderate'),
+        (SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'helmet'),
+        TRUE, 1), -- Helmet for moderate routes
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'very difficult'),
+        (SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'ice axe'),
+        TRUE, 1), -- Ice axe for very difficult routes
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'very difficult'),
+        (SELECT equipment_id FROM equipment WHERE LOWER(equipment_name) = 'crampons'),
+        TRUE, 1) -- Crampons for very difficult routes
+ON CONFLICT ON CONSTRAINT unique_equipment_requirement DO NOTHING;
 
--- Add Payment Rates
-INSERT INTO payment_rate (rate_id, difficulty_level_id, base_fee, effective_date, end_date, equipment_rental_surcharge, guide_fee_percentage, peak_season_surcharge, group_discount_threshold, group_discount_percentage) VALUES
-(1, 1, 300.00, '2023-01-01', '2023-12-31', 10.00, 15.00, 50.00, 6, 10.00),
-(2, 2, 600.00, '2023-01-01', '2023-12-31', 12.00, 15.00, 75.00, 6, 10.00),
-(3, 3, 1000.00, '2023-01-01', '2023-12-31', 15.00, 18.00, 100.00, 6, 10.00),
-(4, 4, 1500.00, '2023-01-01', '2023-12-31', 18.00, 20.00, 150.00, 5, 10.00),
-(5, 5, 2500.00, '2023-01-01', '2023-12-30',19.00, 20.00, 150.00, 6, 10.00);
+-- CREATE INDEX IF NOT EXISTSes for equipment requirements
+CREATE INDEX IF NOT EXISTS idx_requirement_difficulty ON equipment_requirement (difficulty_level_id);
+CREATE INDEX IF NOT EXISTS idx_requirement_equipment ON equipment_requirement (equipment_id);
+
+
+-- Populate insurance_level table
+INSERT INTO insurance_level (insurance_name, coverage_details, min_coverage_amount, search_rescue_coverage,
+                             helicopter_evacuation_covered, medical_repatriation_covered, third_party_liability)
+VALUES ('Basic', 'Covers basic medical expenses', 50000.00, 10000.00, FALSE, FALSE, FALSE),
+       ('Standard', 'Covers medical expenses and basic rescue', 100000.00, 25000.00, TRUE, FALSE, TRUE),
+       ('Premium', 'Comprehensive coverage for all risks', 250000.00, 50000.00, TRUE, TRUE, TRUE)
+ON CONFLICT (insurance_name) DO NOTHING;
+
+-- Populate climb table (requires route and insurance_level to exist)
+INSERT INTO climb (start_date, end_date, route_id, status, insurance_level_id, max_participants, total_cost,
+                   is_club_sponsored, registration_deadline, briefing_datetime)
+VALUES ('2025-07-10', '2025-07-13',
+        (SELECT route_id FROM route WHERE LOWER(route_name) = 'hörnli ridge' AND
+         mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'matterhorn')),
+        'Planned',
+        (SELECT insurance_level_id FROM insurance_level WHERE LOWER(insurance_name) = 'premium'),
+        8, 1500.00, TRUE, '2025-06-15', '2025-07-09 18:00:00'),
+       ('2025-07-20', '2025-07-22',
+        (SELECT route_id FROM route WHERE LOWER(route_name) = 'normal route' AND
+         mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'tre cime di lavaredo')),
+        'Planned',
+        (SELECT insurance_level_id FROM insurance_level WHERE LOWER(insurance_name) = 'standard'),
+        12, 800.00, TRUE, '2025-06-25', '2025-07-19 17:00:00'),
+       ('2025-08-05', '2025-08-08',
+        (SELECT route_id FROM route WHERE LOWER(route_name) = 'disappointment cleaver' AND
+         mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'mount rainier')),
+        'Planned',
+        (SELECT insurance_level_id FROM insurance_level WHERE LOWER(insurance_name) = 'premium'),
+        10, 2000.00, FALSE, '2025-07-15', '2025-08-04 16:00:00')
+ON CONFLICT DO NOTHING;
+
+-- CREATE INDEX IF NOT EXISTSes for climbs
+CREATE INDEX IF NOT EXISTS idx_climb_route ON climb (route_id);
+CREATE INDEX IF NOT EXISTS idx_climb_dates ON climb (start_date, end_date);
+CREATE INDEX IF NOT EXISTS idx_climb_status ON climb (status);
+CREATE INDEX IF NOT EXISTS idx_climb_insurance ON climb (insurance_level_id);
+
+-- Populate climber_insurance table (requires climber to exist)
+INSERT INTO climber_insurance (climber_id, policy_number, start_date, end_date, coverage_amount, verified)
+VALUES ((SELECT climber_id FROM climber WHERE LOWER(email) = 'alex@example.com'),
+        'INS-10001', '2025-01-01', '2025-12-31', 200000.00, TRUE),
+       ((SELECT climber_id FROM climber WHERE LOWER(email) = 'maria@example.com'),
+        'INS-10002', '2025-01-15', '2025-12-31', 300000.00, TRUE),
+       ((SELECT climber_id FROM climber WHERE LOWER(email) = 'hiroshi@example.com'),
+        'INS-10003', '2025-02-01', '2025-12-31', 100000.00, TRUE)
+ON CONFLICT ON CONSTRAINT unique_climber_policy DO NOTHING;
+
+-- CREATE INDEX IF NOT EXISTSes for climber insurance
+CREATE INDEX IF NOT EXISTS idx_climber_insurance_climber ON climber_insurance (climber_id);
+CREATE INDEX IF NOT EXISTS idx_climber_insurance_dates ON climber_insurance (end_date);
+
+-- Populate climb_participant table (requires climb and climber to exist)
+INSERT INTO climb_participant (climb_id, climber_id, waiver_signed, signed_date, has_required_insurance,
+                              attendance_confirmed)
+WITH climb_data AS (
+    SELECT
+        (SELECT climb_id FROM climb WHERE start_date = '2025-07-10' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'hörnli ridge' AND
+                    mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'matterhorn'))) AS climb1,
+        (SELECT climb_id FROM climb WHERE start_date = '2025-07-20' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'normal route' AND
+                    mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'tre cime di lavaredo'))) AS climb2,
+        (SELECT climb_id FROM climb WHERE start_date = '2025-08-05' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'disappointment cleaver' AND
+                    mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'mount rainier'))) AS climb3,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'alex@example.com') AS climber1,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'maria@example.com') AS climber2,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'hiroshi@example.com') AS climber3
+)
+SELECT
+    climb1, climber1, TRUE, '2025-06-01', TRUE, TRUE
+FROM climb_data
+UNION ALL
+SELECT
+    climb1, climber2, TRUE, '2025-06-02', TRUE, TRUE
+FROM climb_data
+UNION ALL
+SELECT
+    climb2, climber3, TRUE, '2025-06-15', TRUE, FALSE
+FROM climb_data
+UNION ALL
+SELECT
+    climb3, climber1, TRUE, '2025-06-20', TRUE, FALSE
+FROM climb_data
+UNION ALL
+SELECT
+    climb3, climber2, TRUE, '2025-06-21', TRUE, FALSE
+FROM climb_data
+ON CONFLICT ON CONSTRAINT unique_climber_per_climb DO NOTHING;
+
+-- CREATE INDEX IF NOT EXISTSes for climb participants
+CREATE INDEX IF NOT EXISTS idx_participant_climb ON climb_participant (climb_id);
+CREATE INDEX IF NOT EXISTS idx_participant_climber ON climb_participant (climber_id);
+
+-- Populate invoice table (requires climb and climber to exist)
+INSERT INTO invoice (climb_id, climber_id, invoice_date, due_date, total_amount, status, tax_rate, tax_amount)
+WITH climb_data AS (
+    SELECT
+        (SELECT climb_id FROM climb WHERE start_date = '2025-07-10' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'hörnli ridge' AND
+                    mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'matterhorn'))) AS climb1,
+        (SELECT climb_id FROM climb WHERE start_date = '2025-07-20' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'normal route' AND
+                    mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'tre cime di lavaredo'))) AS climb2,
+        (SELECT climb_id FROM climb WHERE start_date = '2025-08-05' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'disappointment cleaver' AND
+                    mountain_id = (SELECT mountain_id FROM mountain WHERE LOWER(mountain_name) = 'mount rainier'))) AS climb3,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'alex@example.com') AS climber1,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'maria@example.com') AS climber2,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'hiroshi@example.com') AS climber3
+)
+SELECT
+    climb1, climber1, '2025-06-05', '2025-06-25', 1500.00, 'Paid', 7.50, 112.50
+FROM climb_data
+UNION ALL
+SELECT
+    climb1, climber2, '2025-06-05', '2025-06-25', 1500.00, 'Paid', 7.50, 112.50
+FROM climb_data
+UNION ALL
+SELECT
+    climb2, climber3, '2025-06-20', '2025-07-10', 800.00, 'Unpaid', 7.50, 60.00
+FROM climb_data
+UNION ALL
+SELECT
+    climb3, climber1, '2025-06-25', '2025-07-15', 2000.00, 'Partial', 7.50, 150.00
+FROM climb_data
+UNION ALL
+SELECT
+    climb3, climber2, '2025-06-25', '2025-07-15', 2000.00, 'Unpaid', 7.50, 150.00
+FROM climb_data
+ON CONFLICT DO NOTHING;
+
+-- CREATE INDEX IF NOT EXISTSes for invoices
+CREATE INDEX IF NOT EXISTS idx_invoice_climb ON invoice (climb_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_climber ON invoice (climber_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_status ON invoice (status);
+CREATE INDEX IF NOT EXISTS idx_invoice_due_date ON invoice (due_date);
+
+-- Populate payment table with rerunnable inserts and subqueries
+INSERT INTO payment (climb_id, climber_id, amount, payment_date, payment_method, payment_status, transaction_ref, invoice_id)
+WITH data AS (
+    SELECT
+        c.climb_id,
+        cl.climber_id,
+        i.invoice_id
+    FROM
+        climb c,
+        climber cl,
+        invoice i
+    WHERE
+        i.climb_id = c.climb_id AND
+        i.climber_id = cl.climber_id
+)
+SELECT
+    d.climb_id,
+    d.climber_id,
+    1500.00,
+    '2025-06-10',
+    'Credit Card',
+    'Completed',
+    'TRX-10001',
+    d.invoice_id
+FROM
+    data d
+    JOIN climber cl ON d.climber_id = cl.climber_id
+    JOIN climb c ON d.climb_id = c.climb_id
+WHERE
+    LOWER(cl.email) = 'alex@example.com' AND
+    c.start_date = '2025-07-10'
+UNION ALL
+SELECT
+    d.climb_id,
+    d.climber_id,
+    1500.00,
+    '2025-06-12',
+    'Credit Card',
+    'Completed',
+    'TRX-10002',
+    d.invoice_id
+FROM
+    data d
+    JOIN climber cl ON d.climber_id = cl.climber_id
+    JOIN climb c ON d.climb_id = c.climb_id
+WHERE
+    LOWER(cl.email) = 'maria@example.com' AND
+    c.start_date = '2025-07-10'
+UNION ALL
+SELECT
+    d.climb_id,
+    d.climber_id,
+    1000.00,
+    '2025-07-01',
+    'Bank Transfer',
+    'Completed',
+    'TRX-10003',
+    d.invoice_id
+FROM
+    data d
+    JOIN climber cl ON d.climber_id = cl.climber_id
+    JOIN climb c ON d.climb_id = c.climb_id
+WHERE
+    LOWER(cl.email) = 'alex@example.com' AND
+    c.start_date = '2025-08-05'
+ON CONFLICT (transaction_ref) DO NOTHING;
+
+-- CREATE INDEX IF NOT EXISTSes for payments
+CREATE INDEX IF NOT EXISTS idx_payment_climb ON payment (climb_id);
+CREATE INDEX IF NOT EXISTS idx_payment_climber ON payment (climber_id);
+CREATE INDEX IF NOT EXISTS idx_payment_status ON payment (payment_status);
+CREATE INDEX IF NOT EXISTS idx_payment_invoice ON payment (invoice_id);
+
+-- Populate equipment_rental table (requires inventory, climber, and climb to exist)
+INSERT INTO equipment_rental (inventory_id, climber_id, climb_id, rental_start, rental_end, deposit_amount, rental_fee)
+WITH data AS (
+    SELECT
+        (SELECT inventory_id FROM equipment_inventory ei
+         JOIN equipment e ON ei.equipment_id = e.equipment_id
+         WHERE LOWER(e.equipment_name) = 'ice axe' AND ei.serial_number = 'AX-10001') AS inv1,
+        (SELECT inventory_id FROM equipment_inventory ei
+         JOIN equipment e ON ei.equipment_id = e.equipment_id
+         WHERE LOWER(e.equipment_name) = 'ice axe' AND ei.serial_number = 'AX-10002') AS inv2,
+        (SELECT inventory_id FROM equipment_inventory ei
+         JOIN equipment e ON ei.equipment_id = e.equipment_id
+         WHERE LOWER(e.equipment_name) = 'crampons' AND ei.serial_number = 'CR-20001') AS inv3,
+        (SELECT inventory_id FROM equipment_inventory ei
+         JOIN equipment e ON ei.equipment_id = e.equipment_id
+         WHERE LOWER(e.equipment_name) = 'helmet' AND ei.serial_number = 'HM-30001') AS inv4,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'alex@example.com') AS climber1,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'maria@example.com') AS climber2,
+        (SELECT climber_id FROM climber WHERE LOWER(email) = 'hiroshi@example.com') AS climber3,
+        (SELECT climb_id FROM climb WHERE start_date = '2025-07-10' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'hörnli ridge')) AS climb1,
+        (SELECT climb_id FROM climb WHERE start_date = '2025-07-20' AND
+         route_id = (SELECT route_id FROM route WHERE LOWER(route_name) = 'normal route')) AS climb2
+)
+SELECT
+    inv1, climber1, climb1, '2025-07-09', '2025-07-14', 50.00, 50.00
+FROM data
+UNION ALL
+SELECT
+    inv3, climber1, climb1, '2025-07-09', '2025-07-14', 75.00, 75.00
+FROM data
+UNION ALL
+SELECT
+    inv2, climber2, climb1, '2025-07-09', '2025-07-14', 50.00, 75.00
+FROM data
+UNION ALL
+SELECT
+    inv4, climber3, climb2, '2025-07-19', '2025-07-23', 40.00, 32.00
+FROM data
+ON CONFLICT DO NOTHING;
+
+-- CREATE INDEX IF NOT EXISTSes for equipment rentals
+CREATE INDEX IF NOT EXISTS idx_rental_inventory ON equipment_rental (inventory_id);
+CREATE INDEX IF NOT EXISTS idx_rental_climber ON equipment_rental (climber_id);
+CREATE INDEX IF NOT EXISTS idx_rental_climb ON equipment_rental (climb_id);
+CREATE INDEX IF NOT EXISTS idx_rental_dates ON equipment_rental (rental_start, rental_end);
+
+-- Populate payment_rate table (requires difficulty_level to exist)
+INSERT INTO payment_rate (difficulty_level_id, base_fee, effective_date, equipment_rental_surcharge,
+                          guide_fee_percentage, peak_season_surcharge)
+VALUES ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'easy'),
+        200.00, '2025-01-01', 10.00, 15.00, 50.00),
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'moderate'),
+        350.00, '2025-01-01', 15.00, 18.00, 75.00),
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'difficult'),
+        500.00, '2025-01-01', 20.00, 20.00, 100.00),
+       ((SELECT difficulty_level_id FROM difficulty_level WHERE LOWER(difficulty_name) = 'very difficult'),
+        750.00, '2025-01-01', 25.00, 25.00, 150.00)
+ON CONFLICT ON CONSTRAINT unique_difficulty_effective_date DO NOTHING;
+
+
+-- CREATE INDEX IF NOT EXISTSes for payment rates
+CREATE INDEX IF NOT EXISTS idx_payment_rate_difficulty ON payment_rate (difficulty_level_id);
+CREATE INDEX IF NOT EXISTS idx_payment_rate_dates ON payment_rate (effective_date, end_date);
+
+
+-- Add record_ts column to all tables
+
+-- Experience level table
+ALTER TABLE experience_level DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE experience_level
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "experience_level_rows_with_timestamp"
+FROM experience_level
+WHERE record_ts IS NOT NULL;
+
+-- Peak type table
+ALTER TABLE peak_type DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE peak_type
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "peak_type_rows_with_timestamp"
+FROM peak_type
+WHERE record_ts IS NOT NULL;
+
+-- Area table
+ALTER TABLE area DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE area
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "area_rows_with_timestamp"
+FROM area
+WHERE record_ts IS NOT NULL;
+
+-- Climber table
+ALTER TABLE climber DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE climber
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "climber_rows_with_timestamp"
+FROM climber
+WHERE record_ts IS NOT NULL;
+
+-- Mountain table
+ALTER TABLE mountain DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE mountain
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "mountain_rows_with_timestamp"
+FROM mountain
+WHERE record_ts IS NOT NULL;
+
+-- Risk level table
+ALTER TABLE risk_level DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE risk_level
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "risk_level_rows_with_timestamp"
+FROM risk_level
+WHERE record_ts IS NOT NULL;
+
+-- Difficulty level table
+ALTER TABLE difficulty_level DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE difficulty_level
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "difficulty_level_rows_with_timestamp"
+FROM difficulty_level
+WHERE record_ts IS NOT NULL;
+
+-- Route table
+ALTER TABLE route DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE route
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "route_rows_with_timestamp"
+FROM route
+WHERE record_ts IS NOT NULL;
+
+-- Base camp table
+ALTER TABLE base_camp DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE base_camp
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "base_camp_rows_with_timestamp"
+FROM base_camp
+WHERE record_ts IS NOT NULL;
+
+-- Equipment category table
+ALTER TABLE equipment_category DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE equipment_category
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "equipment_category_rows_with_timestamp"
+FROM equipment_category
+WHERE record_ts IS NOT NULL;
+
+-- Equipment table
+ALTER TABLE equipment DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE equipment
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "equipment_rows_with_timestamp"
+FROM equipment
+WHERE record_ts IS NOT NULL;
+
+-- Equipment inventory table
+ALTER TABLE equipment_inventory DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE equipment_inventory
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "equipment_inventory_rows_with_timestamp"
+FROM equipment_inventory
+WHERE record_ts IS NOT NULL;
+
+-- Equipment requirement table
+ALTER TABLE equipment_requirement DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE equipment_requirement
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "equipment_requirement_rows_with_timestamp"
+FROM equipment_requirement
+WHERE record_ts IS NOT NULL;
+
+-- Insurance level table
+ALTER TABLE insurance_level DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE insurance_level
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "insurance_level_rows_with_timestamp"
+FROM insurance_level
+WHERE record_ts IS NOT NULL;
+
+-- Climb table
+ALTER TABLE climb DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE climb
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "climb_rows_with_timestamp"
+FROM climb
+WHERE record_ts IS NOT NULL;
+
+-- Climber insurance table
+ALTER TABLE climber_insurance DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE climber_insurance
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "climber_insurance_rows_with_timestamp"
+FROM climber_insurance
+WHERE record_ts IS NOT NULL;
+
+-- Climb participant table
+ALTER TABLE climb_participant DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE climb_participant
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "climb_participant_rows_with_timestamp"
+FROM climb_participant
+WHERE record_ts IS NOT NULL;
+
+-- Invoice table
+ALTER TABLE invoice DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE invoice
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "invoice_rows_with_timestamp"
+FROM invoice
+WHERE record_ts IS NOT NULL;
+
+-- Payment table
+ALTER TABLE payment DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE payment
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS ((CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "payment_rows_with_timestamp"
+FROM payment
+WHERE record_ts IS NOT NULL;
+
+-- Equipment rental table
+ALTER TABLE equipment_rental DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE equipment_rental
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "equipment_rental_rows_with_timestamp"
+FROM equipment_rental
+WHERE record_ts IS NOT NULL;
+
+-- Payment rate table
+ALTER TABLE payment_rate DROP COLUMN IF EXISTS record_ts;
+ALTER TABLE payment_rate
+    ADD COLUMN record_ts TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED;
+SELECT COUNT(*) AS "payment_rate_rows_with_timestamp"
+FROM payment_rate
+WHERE record_ts IS NOT NULL;
